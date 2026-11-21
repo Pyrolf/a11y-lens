@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import axe from 'axe-core';
+// Import the published browser build verbatim. Vite rewrites the UMD wrapper
+// in `axe.source` when it minifies the imported module, which breaks the
+// injected source in production; ?raw keeps it byte-for-byte intact.
+import axeSource from 'axe-core/axe.min.js?raw';
 import type {
   AxeResultsPayload,
   AxeRuleReport,
@@ -50,6 +53,14 @@ function clampPreviewHeight(height: number): number {
  */
 const FALLBACK_CSS = buildSandboxFallbackCss();
 
+/**
+ * The axe source is embedded in an inline script in the iframe srcDoc. Escape
+ * every `<` as `\u003c` in the JS string literal so any `</script>` sequence in
+ * the minified distribution cannot close the containing HTML script tag early.
+ * The source is injected via `script.textContent` instead of raw interpolation.
+ */
+const AXE_SOURCE_LITERAL = JSON.stringify(axeSource).replace(/</g, '\\u003c');
+
 function buildSrcDoc(html: string): string {
   return `<!doctype html>
 <html lang="en">
@@ -72,7 +83,15 @@ function buildSrcDoc(html: string): string {
   </head>
   <body>
     ${html}
-    <script data-a11y-lens-axe-source>${axe.source}</script>
+    <script data-a11y-lens-axe-loader>
+      (function () {
+        var AXE_SOURCE = ${AXE_SOURCE_LITERAL};
+        var axeScript = document.createElement('script');
+        axeScript.setAttribute('data-a11y-lens-axe-source', '');
+        axeScript.textContent = AXE_SOURCE;
+        document.head.appendChild(axeScript);
+      })();
+    </script>
     <script data-a11y-lens-probe>
       (function () {
         var props = ['color', 'background-color', 'font-size', 'font-weight', 'font-family', 'border-radius', 'padding', 'outline-style', 'outline-width'];
