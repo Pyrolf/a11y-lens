@@ -1,0 +1,12 @@
+{
+  "model": "opencode/big-pickle",
+  "mcp": {
+    "servers": {
+      "playwright": {
+        "type": "local",
+        "command": ["npx", "-y", "@playwright/mcp@latest", "--isolated", "--headless"],
+        "disabled": false
+      }
+    }
+  }
+}
