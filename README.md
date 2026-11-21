@@ -56,7 +56,7 @@ npm run test:e2e         # full Playwright suite
 npm run test:e2e:ui      # interactive Playwright UI
 ```
 
-The Playwright config starts Vite automatically. The suite contains 77 E2E tests across 12 spec files, covering the deterministic rules, axe-backed coverage, all presets, live edits, tokens, and AI providers. CI runs the same sequence on Node 26.13.1 for every push and pull request.
+The Playwright config starts Vite automatically. The suite contains 78 E2E tests across 12 spec files, covering the deterministic rules, axe-backed coverage, all presets, live edits, tokens, AI providers, and a production `vite preview` axe-core regression guard. CI runs the same sequence on Node 26.13.1 for every push and pull request.
 
 ## Accessibility rules checked
 
