@@ -116,7 +116,10 @@ function fixVagueLinkText(html: string): string {
       const effectiveName = ariaLabel || visibleText;
       const normalized = effectiveName.toLowerCase().replace(/[.!?]+$/, '').trim();
       if (VAGUE_LINK_NAMES.has(normalized)) {
-        const label = descriptiveLinkLabel(linkContext(out, offset, tag));
+        // Offsets come from the original input string, not the accumulating
+        // output. Using `out` here also hit the temporal dead zone while the
+        // replace result was still being assigned.
+        const label = descriptiveLinkLabel(linkContext(html, offset, tag));
         const nextTag = setOrAddAttr(tag, 'aria-label', label);
         const nextInner = /<[a-z][\w:-]*\b/i.test(inner) ? inner : label;
         return `${nextTag}${nextInner}</a>`;

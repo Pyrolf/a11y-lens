@@ -4,6 +4,8 @@ const PRODUCTION_BASE_URL = 'http://localhost:4173';
 
 export default defineConfig({
   testDir: './tests',
+  // Unit and eval specs live beside the E2E suite; only *.spec.ts is Playwright.
+  testMatch: '**/*.spec.ts',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

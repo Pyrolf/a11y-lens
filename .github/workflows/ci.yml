@@ -33,6 +33,20 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Unit tests & coverage
+        run: npm run test:unit:coverage
+
+      - name: AI fix evals
+        run: npm run test:evals
+
+      - name: Upload AI fix eval report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-fix-eval-summary
+          path: coverage/ai-fix-eval-summary.json
+          if-no-files-found: ignore
+
       - name: Production build
         run: npm run build
 

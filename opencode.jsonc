@@ -68,6 +68,27 @@
       ],
       "system": "You are a strict senior software engineer reviewing changes. Audit the git diff for bugs, race conditions, security flaws, edge cases, and missing tests. Report findings ordered by severity without modifying files."
     },
+    "qa": {
+      "description": "Read-only UI QA agent that drives the app with Playwright MCP and reports regressions",
+      "mode": "subagent",
+      "model": "opencode/nemotron-3.5-super-vl-free",
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "*", "effect": "ask" },
+        { "action": "playwright_*", "resource": "*", "effect": "allow" }
+      ],
+      "system": "You are a meticulous QA engineer. Use the Playwright MCP browser tools to verify the running A11y-Lens app. Never edit files. Capture console errors and failed network requests. Report exact reproduction steps, expected vs actual behavior, and screenshots when useful. If the dev server is not running, ask before starting it."
+    },
+    "security": {
+      "description": "Read-only security reviewer for the sandbox, CSP, storage, and LLM boundaries",
+      "mode": "subagent",
+      "model": "opencode/nemotron-3.5-super-vl-free",
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "*", "effect": "deny" }
+      ],
+      "system": "You are a strict application security reviewer. Focus on the opaque-origin iframe sandbox, srcDoc construction, postMessage validation, LLM HTML sanitization, sessionStorage secrets, CSP, and dependency risk. Report findings by severity with file/line references. Never modify files."
+    },
 
     // Hidden Background Agents (saves DeepSeek rate limits)
     "compaction": {
@@ -86,6 +107,28 @@
       "agent": "reviewer",
       "subagent": true,
       "template": "Review the following git diff and changed files for bugs, security issues, edge cases, and regressions:\n\n!`git diff HEAD`"
+    },
+    "verify": {
+      "description": "Run the full local verification gate without editing files",
+      "agent": "build",
+      "template": "Run the full verification gate for this repository, in order:\n1. npm run typecheck\n2. npm run lint\n3. npm run build\n4. npm run test:unit:coverage\n5. npm run test:evals\n6. npm run test:e2e\nReport the exact command output and any failures. Do not edit files. Do not claim success unless every command exits 0."
+    },
+    "qa": {
+      "description": "Drive the running app with Playwright MCP and report UI regressions",
+      "agent": "qa",
+      "subagent": true,
+      "template": "Use the Playwright MCP tools to verify the A11y-Lens workbench at http://localhost:5173. Check: (1) select or paste a snippet and confirm the audit issue badge updates, (2) open the AI Fix drawer and run the zero-key demo fix, (3) confirm the before/after diff renders, (4) switch desktop/tablet/mobile viewports, (5) open the Design Tokens tab and run the token audit. Report any console errors, failed network requests, or visual regressions with exact reproduction steps. Do not edit files."
+    },
+    "security-review": {
+      "description": "Audit the sandbox, CSP, storage, and LLM security boundaries",
+      "agent": "security",
+      "subagent": true,
+      "template": "Review the current git diff and the security-sensitive files (src/components/preview/SandboxPreview.tsx, src/hooks/useSessionStorage.ts, src/engine/ai/providers/*, src/engine/ai/sanitizeLlmHtml.ts). Look for sandbox escapes, postMessage origin/target mistakes, XSS in srcDoc or LLM HTML, secret leakage, and unsafe URL handling. Report findings by severity with file and line references. Do not edit files.\n\n!`git diff HEAD`"
+    },
+    "eval": {
+      "description": "Run the deterministic AI-fix eval harness",
+      "agent": "build",
+      "template": "Run npm run test:evals. Summarize the fixture pass rate, any unresolved WCAG rule IDs, and any new regressions introduced by the demo fix. Do not edit files."
     }
   }
 }

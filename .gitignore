@@ -24,6 +24,9 @@ test-results/
 blob-report/
 .playwright-mcp/
 
+# Vitest coverage
+coverage/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
