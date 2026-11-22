@@ -157,6 +157,7 @@ export function PreviewAuditPanel({
           {tab === 'audit' ? (
             <AuditReport
               result={auditResult}
+              html={html}
               selectedIssueIds={selectedIssueIds}
               onToggleIssue={onToggleIssue}
             />

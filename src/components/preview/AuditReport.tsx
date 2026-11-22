@@ -1,6 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { AuditResult } from '../../types/audit';
 import { AuditIssueList } from './AuditIssueList';
+import {
+  clearAuditHistory,
+  listAuditHistory,
+  saveAuditHistory,
+  type AuditHistoryEntry,
+} from '../../lib/auditHistory';
 
 function downloadAuditReport(result: AuditResult) {
   const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
@@ -77,6 +83,7 @@ function downloadHtmlReport(result: AuditResult) {
 
 interface AuditReportProps {
   result: AuditResult | null;
+  html?: string;
   selectedIssueIds: string[];
   onToggleIssue: (issueId: string) => void;
 }
@@ -84,8 +91,34 @@ interface AuditReportProps {
 const VISIBLE_PASSED_RULES = 4;
 const plural = (count: number, noun: string) => `${count} ${noun}${count === 1 ? '' : 's'}`;
 
-export function AuditReport({ result, selectedIssueIds, onToggleIssue }: AuditReportProps) {
+export function AuditReport({ result, html, selectedIssueIds, onToggleIssue }: AuditReportProps) {
   const [showAllPassed, setShowAllPassed] = useState(false);
+  const [history, setHistory] = useState<AuditHistoryEntry[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    listAuditHistory().then((entries) => {
+      if (!cancelled) setHistory(entries);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!result) return;
+    const entry: AuditHistoryEntry = {
+      id: `${result.snippetId}:${result.ranAt}`,
+      ranAt: result.ranAt,
+      issueCount: result.issues.length,
+      errors: result.summary.errors,
+      warnings: result.summary.warnings,
+      infos: result.summary.infos,
+      totalRules: result.summary.totalRules,
+      snippetPreview: (html ?? '').slice(0, 120),
+    };
+    saveAuditHistory(entry).then(() => listAuditHistory().then(setHistory));
+  }, [result, html]);
   const passedRules = result?.summary.passedRules ?? [];
   const overflowCount = Math.max(0, passedRules.length - VISIBLE_PASSED_RULES);
   const visiblePassedRules = showAllPassed
@@ -199,6 +232,37 @@ export function AuditReport({ result, selectedIssueIds, onToggleIssue }: AuditRe
         )}
         <span> · {result.durationMs}ms</span>
       </div>
+
+      <section
+        className="rounded-md border border-slate-800 bg-slate-950/40 p-3 text-xs text-slate-300"
+        data-testid="audit-history"
+      >
+        <div className="mb-2 flex items-center justify-between">
+          <h3 className="font-semibold text-slate-100">Recent audits</h3>
+          <button
+            type="button"
+            data-testid="clear-audit-history"
+            onClick={() => clearAuditHistory().then(() => setHistory([]))}
+            className="text-slate-400 hover:text-slate-200 focus-visible:outline-2 focus-visible:outline-indigo-500"
+          >
+            Clear
+          </button>
+        </div>
+        {history.length === 0 ? (
+          <p className="text-slate-500">No audit history yet.</p>
+        ) : (
+          <ul className="space-y-1">
+            {history.slice(0, 5).map((entry) => (
+              <li key={entry.id} className="flex items-center justify-between gap-2">
+                <span className="truncate">{entry.snippetPreview || 'Audit run'}</span>
+                <span className="shrink-0 text-slate-400">
+                  {entry.issueCount} issues · {new Date(entry.ranAt).toLocaleTimeString()}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }
