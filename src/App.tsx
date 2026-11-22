@@ -8,6 +8,7 @@ import { useAiFix } from './hooks/useAiFix';
 import { useAudit } from './hooks/useAudit';
 import { useDesignTokens } from './hooks/useDesignTokens';
 import { APP_NAME } from './lib/constants';
+import { Activity, Share2 } from 'lucide-react';
 import { ALL_PRESETS, STARTER_PRESET, type SnippetPreset } from './lib/sampleSnippets';
 import { SAMPLE_TOKEN_JSON } from './lib/sampleTokens';
 import { decodeSharePayload, encodeSharePayload, getShareHash } from './lib/shareLink';
@@ -253,31 +254,37 @@ export default function App() {
               AI fixes are optional via Demo mode or BYOK.
             </p>
           </div>
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <button
-              type="button"
-              onClick={handleShare}
-              data-testid="share-link-button"
-              className="rounded-full border border-indigo-500/40 bg-indigo-500/10 px-2 py-1 text-indigo-200 hover:border-indigo-400 hover:text-indigo-100 focus-visible:outline-2 focus-visible:outline-indigo-500"
-            >
-              {shareStatus === 'copied'
-                ? 'Link copied'
-                : shareStatus === 'error'
-                  ? 'Copy failed'
-                  : 'Share link'}
-            </button>
-            <button
-              type="button"
-              onClick={downloadWebVitals}
-              data-testid="download-web-vitals"
-              className="rounded-full border border-slate-700 bg-slate-900 px-2 py-1 text-slate-300 hover:border-slate-500 hover:text-white focus-visible:outline-2 focus-visible:outline-indigo-500"
-            >
-              Perf JSON
-            </button>
-            <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-emerald-200">
-              100% Client-Side
-            </span>
-            <span className="rounded-full border border-slate-700 px-2 py-1">sessionStorage BYOK</span>
+          <div className="flex flex-col items-stretch gap-2 sm:items-end">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleShare}
+                data-testid="share-link-button"
+                className="inline-flex items-center gap-1.5 rounded-md border border-indigo-500/40 bg-indigo-500/10 px-3 py-1.5 text-xs font-medium text-indigo-200 hover:border-indigo-400 hover:bg-indigo-500/20 hover:text-indigo-100 focus-visible:outline-2 focus-visible:outline-indigo-500"
+              >
+                <Share2 size={14} aria-hidden="true" />
+                {shareStatus === 'copied'
+                  ? 'Link copied'
+                  : shareStatus === 'error'
+                    ? 'Copy failed'
+                    : 'Share link'}
+              </button>
+              <button
+                type="button"
+                onClick={downloadWebVitals}
+                data-testid="download-web-vitals"
+                className="inline-flex items-center gap-1.5 rounded-md border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-medium text-slate-200 hover:border-slate-500 hover:bg-slate-800 hover:text-white focus-visible:outline-2 focus-visible:outline-indigo-500"
+              >
+                <Activity size={14} aria-hidden="true" />
+                Perf JSON
+              </button>
+            </div>
+            <div className="flex flex-wrap items-center justify-end gap-2 text-xs text-slate-400">
+              <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-emerald-200">
+                100% Client-Side
+              </span>
+              <span className="rounded-full border border-slate-700 px-2 py-1">sessionStorage BYOK</span>
+            </div>
           </div>
         </header>
       }
