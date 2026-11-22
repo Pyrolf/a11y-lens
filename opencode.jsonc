@@ -1,5 +1,18 @@
 {
-  "model": "opencode/big-pickle",
+  "$schema": "https://opencode.ai/config.json",
+  // Ollama at http://127.0.0.1:11434 is auto-discovered by OpenCode; no provider block needed.
+  "model": "opencode/deepseek-v4.1-flash-free",
+  "default_agent": "build",
+  "snapshots": true,
+  "compaction": {
+    "auto": true,
+    "background": true
+  },
+  "formatter": true,
+  "watcher": {
+    "ignore": ["dist/**", "coverage/**", "playwright-report/**", "test-results/**"]
+  },
+  "instructions": ["AGENTS.md"],
   "mcp": {
     "servers": {
       "playwright": {
@@ -7,6 +20,72 @@
         "command": ["npx", "-y", "@playwright/mcp@latest", "--isolated", "--headless"],
         "disabled": false
       }
+    }
+  },
+  "agents": {
+    // Primary Agents (switch with Tab)
+    "build": {
+      "description": "Primary coding agent for feature implementation and edits",
+      "mode": "primary",
+      "model": "opencode/deepseek-v4.1-flash-free",
+      "permissions": [
+        { "action": "shell", "resource": "git push *", "effect": "ask" },
+        { "action": "shell", "resource": "git reset --hard*", "effect": "ask" }
+      ]
+    },
+    "plan": {
+      "description": "Deep architectural planning and multi-file design before coding",
+      "mode": "primary",
+      "model": "opencode/beam-free",
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "*", "effect": "ask" }
+      ]
+    },
+
+    // Subagents (isolated contexts)
+    "explore": {
+      "description": "Fast read-only subagent for codebase grep and file lookup",
+      "mode": "subagent",
+      "model": "opencode/nemotron-3.5-lightning-free",
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "*", "effect": "deny" }
+      ]
+    },
+    "general": {
+      "description": "General-purpose multi-step research and helper subagent",
+      "mode": "subagent",
+      "model": "opencode/mimo-v2.6-flash-free"
+    },
+    "reviewer": {
+      "description": "Cross-model code reviewer for git diffs, edge cases, and UI checks",
+      "mode": "subagent",
+      "model": "opencode/nemotron-3.5-super-vl-free",
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "*", "effect": "deny" }
+      ],
+      "system": "You are a strict senior software engineer reviewing changes. Audit the git diff for bugs, race conditions, security flaws, edge cases, and missing tests. Report findings ordered by severity without modifying files."
+    },
+
+    // Hidden Background Agents (saves DeepSeek rate limits)
+    "compaction": {
+      "model": "opencode/nemotron-3.5-lightning-free"
+    },
+    "title": {
+      "model": "opencode/nemotron-3.5-lightning-free"
+    },
+    "summary": {
+      "model": "opencode/nemotron-3.5-lightning-free"
+    }
+  },
+  "commands": {
+    "review": {
+      "description": "Review current git diff with the cross-model reviewer subagent",
+      "agent": "reviewer",
+      "subagent": true,
+      "template": "Review the following git diff and changed files for bugs, security issues, edge cases, and regressions:\n\n!`git diff HEAD`"
     }
   }
 }
