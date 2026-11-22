@@ -10,6 +10,7 @@ import { useDesignTokens } from './hooks/useDesignTokens';
 import { APP_NAME } from './lib/constants';
 import { ALL_PRESETS, STARTER_PRESET, type SnippetPreset } from './lib/sampleSnippets';
 import { SAMPLE_TOKEN_JSON } from './lib/sampleTokens';
+import { decodeSharePayload, encodeSharePayload, getShareHash } from './lib/shareLink';
 import type { AxeResultsPayload, ComputedStyleEntry } from './types/audit';
 import type { CodeSnippet } from './types/editor';
 import type {
@@ -44,6 +45,7 @@ export default function App() {
   const [tokenJson, setTokenJson] = useState(SAMPLE_TOKEN_JSON);
   const [selectedIssueIds, setSelectedIssueIds] = useState<string[]>([]);
   const [isAiDrawerOpen, setIsAiDrawerOpen] = useState(false);
+  const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'error'>('idle');
   const [previewStyles, setPreviewStyles] = useState<ComputedStyleEntry[]>([]);
   const [axeResults, setAxeResults] = useState<AxeResultsPayload>({ violations: [], passes: [] });
   // Snapshot styles/axe findings are tagged with the HTML that produced them.
@@ -57,6 +59,44 @@ export default function App() {
   const ai = useAiFix();
   const cancelAiRequest = ai.cancel;
 
+  useEffect(() => {
+    const encoded = getShareHash();
+    if (!encoded) return;
+    let cancelled = false;
+    decodeSharePayload(encoded).then((payload) => {
+      if (cancelled || !payload) return;
+      const now = new Date().toISOString();
+      const sharedSnippet: CodeSnippet = {
+        id: CUSTOM_SNIPPET_ID,
+        name: 'Shared Snippet',
+        language: 'html-tailwind',
+        html: payload.html,
+        createdAt: now,
+        updatedAt: now,
+      };
+      setSnippet(sharedSnippet);
+      setLiveSnippet(sharedSnippet);
+      if (payload.tokenJson) setTokenJson(payload.tokenJson);
+      setSelectedIssueIds([]);
+      setRightPanelTab('audit');
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleShare = useCallback(async () => {
+    try {
+      const encoded = await encodeSharePayload({ html: snippet.html, tokenJson });
+      const url = `${window.location.origin}${window.location.pathname}#share=${encoded}`;
+      await navigator.clipboard.writeText(url);
+      setShareStatus('copied');
+    } catch {
+      setShareStatus('error');
+    } finally {
+      window.setTimeout(() => setShareStatus('idle'), 2000);
+    }
+  }, [snippet.html, tokenJson]);
   const analyze = useCallback(
     (
       target: CodeSnippet,
@@ -203,6 +243,18 @@ export default function App() {
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs text-slate-400">
+            <button
+              type="button"
+              onClick={handleShare}
+              data-testid="share-link-button"
+              className="rounded-full border border-indigo-500/40 bg-indigo-500/10 px-2 py-1 text-indigo-200 hover:border-indigo-400 hover:text-indigo-100 focus-visible:outline-2 focus-visible:outline-indigo-500"
+            >
+              {shareStatus === 'copied'
+                ? 'Link copied'
+                : shareStatus === 'error'
+                  ? 'Copy failed'
+                  : 'Share link'}
+            </button>
             <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-emerald-200">
               100% Client-Side
             </span>
