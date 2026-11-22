@@ -3,6 +3,9 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.tsx';
 import { WorkbenchErrorBoundary } from './components/layout/WorkbenchErrorBoundary';
+import { startWebVitals } from './lib/webVitals';
+
+startWebVitals();
 
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {

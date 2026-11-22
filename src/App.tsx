@@ -11,6 +11,7 @@ import { APP_NAME } from './lib/constants';
 import { ALL_PRESETS, STARTER_PRESET, type SnippetPreset } from './lib/sampleSnippets';
 import { SAMPLE_TOKEN_JSON } from './lib/sampleTokens';
 import { decodeSharePayload, encodeSharePayload, getShareHash } from './lib/shareLink';
+import { downloadWebVitals } from './lib/webVitals';
 import type { AxeResultsPayload, ComputedStyleEntry } from './types/audit';
 import type { CodeSnippet } from './types/editor';
 import type {
@@ -254,6 +255,14 @@ export default function App() {
                 : shareStatus === 'error'
                   ? 'Copy failed'
                   : 'Share link'}
+            </button>
+            <button
+              type="button"
+              onClick={downloadWebVitals}
+              data-testid="download-web-vitals"
+              className="rounded-full border border-slate-700 bg-slate-900 px-2 py-1 text-slate-300 hover:border-slate-500 hover:text-white focus-visible:outline-2 focus-visible:outline-indigo-500"
+            >
+              Perf JSON
             </button>
             <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-emerald-200">
               100% Client-Side
