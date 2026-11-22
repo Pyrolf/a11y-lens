@@ -2,6 +2,18 @@ import { useState } from 'react';
 import type { AuditResult } from '../../types/audit';
 import { AuditIssueList } from './AuditIssueList';
 
+function downloadAuditReport(result: AuditResult) {
+  const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = `a11y-lens-audit-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(url);
+}
+
 interface AuditReportProps {
   result: AuditResult | null;
   selectedIssueIds: string[];
@@ -58,6 +70,17 @@ export function AuditReport({ result, selectedIssueIds, onToggleIssue }: AuditRe
         <div className="rounded-md border border-sky-500/30 bg-sky-500/10 p-2 text-sky-200">
           <div className="text-lg font-semibold">{result.summary.infos}</div>Info
         </div>
+      </div>
+
+      <div className="flex items-center justify-end">
+        <button
+          type="button"
+          data-testid="download-audit-json"
+          onClick={() => downloadAuditReport(result)}
+          className="rounded-md border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-medium text-slate-200 hover:border-slate-500 hover:text-white focus-visible:outline-2 focus-visible:outline-indigo-500"
+        >
+          Download Audit JSON
+        </button>
       </div>
 
       <AuditIssueList
