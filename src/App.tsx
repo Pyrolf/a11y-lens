@@ -60,29 +60,39 @@ export default function App() {
   const ai = useAiFix();
   const cancelAiRequest = ai.cancel;
 
+  const shareRequestRef = useRef(0);
+
   useEffect(() => {
-    const encoded = getShareHash();
-    if (!encoded) return;
     let cancelled = false;
-    decodeSharePayload(encoded).then((payload) => {
-      if (cancelled || !payload) return;
-      const now = new Date().toISOString();
-      const sharedSnippet: CodeSnippet = {
-        id: CUSTOM_SNIPPET_ID,
-        name: 'Shared Snippet',
-        language: 'html-tailwind',
-        html: payload.html,
-        createdAt: now,
-        updatedAt: now,
-      };
-      setSnippet(sharedSnippet);
-      setLiveSnippet(sharedSnippet);
-      if (payload.tokenJson) setTokenJson(payload.tokenJson);
-      setSelectedIssueIds([]);
-      setRightPanelTab('audit');
-    });
+
+    const hydrateFromHash = () => {
+      const encoded = getShareHash();
+      if (!encoded) return;
+      const requestId = ++shareRequestRef.current;
+      decodeSharePayload(encoded).then((payload) => {
+        if (cancelled || requestId !== shareRequestRef.current || !payload) return;
+        const now = new Date().toISOString();
+        const sharedSnippet: CodeSnippet = {
+          id: CUSTOM_SNIPPET_ID,
+          name: 'Shared Snippet',
+          language: 'html-tailwind',
+          html: payload.html,
+          createdAt: now,
+          updatedAt: now,
+        };
+        setSnippet(sharedSnippet);
+        setLiveSnippet(sharedSnippet);
+        if (payload.tokenJson) setTokenJson(payload.tokenJson);
+        setSelectedIssueIds([]);
+        setRightPanelTab('audit');
+      });
+    };
+
+    hydrateFromHash();
+    window.addEventListener('hashchange', hydrateFromHash);
     return () => {
       cancelled = true;
+      window.removeEventListener('hashchange', hydrateFromHash);
     };
   }, []);
 
