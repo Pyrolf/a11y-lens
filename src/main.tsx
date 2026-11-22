@@ -4,6 +4,14 @@ import './index.css';
 import App from './App.tsx';
 import { WorkbenchErrorBoundary } from './components/layout/WorkbenchErrorBoundary';
 
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Offline support is progressive enhancement; never block app startup.
+    });
+  });
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <WorkbenchErrorBoundary>

@@ -1,0 +1,17 @@
+{
+  "name": "A11y-Lens",
+  "short_name": "A11y-Lens",
+  "description": "Client-side WCAG and design-token auditor for HTML/Tailwind snippets.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

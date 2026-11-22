@@ -53,6 +53,10 @@ jobs:
       - name: Bundle size budget
         run: npm run check:bundle
 
+      - name: Lighthouse CI
+        continue-on-error: true
+        run: npx --yes @lhci/cli@latest autorun
+
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
