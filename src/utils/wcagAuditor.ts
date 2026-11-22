@@ -29,6 +29,7 @@ import {
   parseInlineDeclarations,
   textColorForElement,
 } from './styleResolver';
+import { resolveAuditRules, type CustomAuditRule } from '../engine/audit/customRules';
 
 export { contrastRatio, parseColor } from './colorMath';
 
@@ -49,6 +50,7 @@ interface AuditOptions {
   computedStyles?: ComputedStyleEntry[];
   axeViolations?: AxeViolationReport[];
   axePasses?: AxeRuleReport[];
+  customRules?: CustomAuditRule[];
 }
 
 /** Text directly owned by an element (not by its descendants). */
@@ -539,6 +541,15 @@ export function auditHtml(html: string, snippetId: string, options: AuditOptions
         fontSizeForElement(element),
         fontWeightForElement(element),
       );
+    }
+  }
+
+  // Run any explicitly provided or globally registered custom audit rules.
+  // These let the deterministic engine be extended without changing its core.
+  for (const rule of resolveAuditRules(options.customRules)) {
+    for (const element of Array.from(doc.querySelectorAll(rule.selector))) {
+      if (rule.test(element, doc)) continue;
+      pushElement(rule.id, element, rule.message);
     }
   }
 
