@@ -159,23 +159,28 @@ export function parseTokenDocument(
     return { document: null, error: 'Token document must be a JSON object.' };
   }
 
-  const typography = isRecord(raw.typography) ? raw.typography : {};
+  // Accept either a raw token document or a full A11y-Lens audit report, whose
+  // token document lives under the `tokens` key. This keeps "Download Audit JSON"
+  // and "Import JSON" round-trippable.
+  const source = isRecord(raw.tokens) ? raw.tokens : raw;
+
+  const typography = isRecord(source.typography) ? source.typography : {};
   // Both `color` and `colors` are accepted; the singular key wins on conflicts.
-  const colors = { ...asStringRecord(raw.colors), ...asStringRecord(raw.color) };
+  const colors = { ...asStringRecord(source.colors), ...asStringRecord(source.color) };
   const pairsOmitted =
-    !Object.prototype.hasOwnProperty.call(raw, 'contrastPairs') || raw.contrastPairs === null;
+    !Object.prototype.hasOwnProperty.call(source, 'contrastPairs') || source.contrastPairs === null;
 
   return {
     document: {
       color: colors,
-      spacing: asStringRecord(raw.spacing),
+      spacing: asStringRecord(source.spacing),
       typography: {
         fontFamily: asStringRecord(typography.fontFamily),
         fontSize: asStringRecord(typography.fontSize),
       },
       contrastPairs: pairsOmitted
         ? inferContrastPairs(colors)
-        : asContrastPairs(raw.contrastPairs),
+        : asContrastPairs(source.contrastPairs),
     },
     error: null,
   };
