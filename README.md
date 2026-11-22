@@ -10,6 +10,7 @@ A client-side WCAG & design-token auditor for HTML/Tailwind snippets. Paste mark
 - **Smart, honest model discovery.** OpenRouter's catalog is filtered to $0 models, ranked by coding/agentic affinity and then context window, cached for five minutes, and refreshed on demand; congested families are hidden unless typed manually. Ollama probes `/api/tags` and distinguishes `connected`, `empty`, and `offline`, so fallback suggestions are never mislabeled as installed. Both dropdowns render one grouped section plus a custom-model option.
 - **Clean token extraction.** Only elements from the user snippet are inspected. Transparent backgrounds are dropped, effective backgrounds stay internal to contrast math (no duplicate rows), and every color is shown as uppercase `#HEX` plus its original `rgb()` with an “N elements” usage badge.
 - **AI fixes are measured, not assumed.** A deterministic eval harness runs inaccessible fixtures through the zero-key demo fixer and asserts that each expected WCAG rule is resolved without introducing a new rule family.
+- **Production-hardened.** Content Security Policy and security headers ship with the app, a dependency-free bundle budget guards the JS/CSS gzip size in CI, and Vercel headers enforce `X-Frame-Options`, `nosniff`, and a strict referrer policy.
 
 ## AI-native development workflow
 
@@ -66,6 +67,7 @@ npm run build              # typecheck + production bundle
 npm run test:unit          # Vitest unit suite
 npm run test:unit:coverage # unit suite + coverage thresholds
 npm run test:evals         # deterministic AI-fix eval harness
+npm run check:bundle       # gzip bundle-size budget
 npx playwright install --with-deps chromium
 npm run test:e2e           # full Playwright suite
 npm run test:e2e:ui        # interactive Playwright UI
