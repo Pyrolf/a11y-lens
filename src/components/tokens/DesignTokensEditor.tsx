@@ -1,5 +1,5 @@
-import { Copy, Download } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { Copy, Download, Upload } from 'lucide-react';
+import { type ChangeEvent, useMemo, useRef, useState } from 'react';
 import {
   buildContrastResults,
   buildCssVariables,
@@ -33,6 +33,22 @@ function copyWithFallback(text: string): void {
 
 export function DesignTokensEditor({ value, onChange, auditResult }: DesignTokensEditorProps) {
   const [status, setStatus] = useState('');
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleImport = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        onChange(reader.result);
+        setStatus(`Imported ${file.name}.`);
+      }
+    };
+    reader.onerror = () => setStatus('Import failed. Select a valid JSON file.');
+    reader.readAsText(file);
+    event.target.value = '';
+  };
 
   const parsed = useMemo(() => parseTokenDocument(value), [value]);
   const documentTokens = parsed.document;
@@ -103,6 +119,23 @@ export function DesignTokensEditor({ value, onChange, auditResult }: DesignToken
           <h2 className="text-sm font-semibold text-slate-100">WCAG-ready tokens</h2>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json,.json"
+            data-testid="token-file-input"
+            className="sr-only"
+            onChange={handleImport}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            data-testid="import-token-json"
+            className="inline-flex items-center gap-2 rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-xs font-medium text-slate-200 hover:border-slate-500 hover:text-white"
+          >
+            <Upload size={14} aria-hidden="true" />
+            Import JSON
+          </button>
           <button
             type="button"
             onClick={handleCopy}
