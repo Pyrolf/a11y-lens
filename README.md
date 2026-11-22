@@ -76,7 +76,7 @@ npm run test               # unit + evals + E2E
 
 The Playwright config starts Vite automatically. The suite contains 78 E2E tests across 12 spec files, covering the deterministic rules, axe-backed coverage, all presets, live edits, tokens, AI providers, and a production `vite preview` axe-core regression guard.
 
-On top of that, 61 Vitest unit tests cover color math, WCAG rule behavior, token validation, and LLM guardrails with coverage thresholds (85% statements/lines/functions, 75% branches). The eval harness runs eight inaccessible fixtures through the zero-key demo fixer and asserts each expected rule is resolved with no new rule families introduced, with an aggregate pass-rate floor of 87.5%. CI runs lint, typecheck, production build, unit coverage, evals, and E2E on Node 26.13.1 for every push and pull request, and uploads `coverage/ai-fix-eval-summary.json` as a machine-readable eval artifact.
+On top of that, 67 Vitest unit tests cover color math, WCAG rule behavior, token validation, LLM guardrails, share links, custom rules, and Web Vitals with coverage thresholds (85% statements/lines/functions, 75% branches). The eval harness runs eight inaccessible fixtures through the zero-key demo fixer and asserts each expected rule is resolved with no new rule families introduced, with an aggregate pass-rate floor of 87.5%. In total the project has 153 automated tests: 78 Playwright E2E, 67 Vitest unit, and 8 AI-fix eval fixtures. CI runs lint, typecheck, production build, unit coverage, evals, and E2E on Node 26.13.1 for every push and pull request, and uploads `coverage/ai-fix-eval-summary.json` as a machine-readable eval artifact.
 
 ## Accessibility rules checked
 
